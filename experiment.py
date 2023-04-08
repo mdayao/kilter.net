@@ -28,6 +28,11 @@ class VAEXperiment(pl.LightningModule):
 	def forward(self, input: torch.tensor, y: torch.tensor, **kwargs) -> torch.tensor:
         return self.model(input, y, **kwargs)
 
+	def on_train_epoch_start(self) -> None:
+		lr = self.trainer.optimizers[0].param_groups[0]['lr']
+		self.logger.experiment.log({'learning_rate': lr}, step=self.current_epoch)
+
+
     def training_step(self, batch, batch_idx, optimizer_idx = 0):
         real_img, labels = batch
         self.curr_device = real_img.device

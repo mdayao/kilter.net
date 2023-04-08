@@ -7,23 +7,27 @@ from experiment import VAEXperiment
 from models.cvae import CVAE
 import torch.backends.cudnn as cudnn
 from pytorch_lightning import Trainer
+from lightning.pytorch.loggers import WandbLogger
 from pytorch_lightning.utilities.seed import seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
-from dataset import VAEDataset
 from pytorch_lightning.plugins import DDPPlugin
 import wandb
 
 
-# parser = argparse.ArgumentParser(description='Generic runner for VAE models')
-
-# args = parser.parse_args()
-
-
-# For reproducibility
-seed_everything(config['exp_params']['manual_seed'], True)
+parser = argparse.ArgumentParser(description='Generic runner for VAE models')
+parser.add_argument('--latent_dim','-L', type=int, default=32, help='Latent dimension')
+parser.add_argument('--learning_rate', '-lr', type=float, default=1e-3, help='Learning rate')
+parser.add_argument('--batch_size', '-bs', type=int, default=128, help='Batch size')
 
 
-model = CVAE(in_channels=5,num_classes=10, latent_dim=32, img_size=img_size)
+args = parser.parse_args()
+config = vars(args)
+
+WANDB_PROJECT = "cvae"
+WANDB_ENTITY = "cvae"
+WANDB_NAME = "cvae"
+wandb_logger = WandbLogger(project=WANDB_PROJECT)
+model = CVAE(in_channels=5,num_classes=10, latent_dim=args.latent_dim, img_size=img_size)
 
 experiment = VAEXperiment(model,
                           config['exp_params'])
@@ -31,7 +35,7 @@ experiment = VAEXperiment(model,
 data = VAEDataset(**config["data_params"], pin_memory=len(config['trainer_params']['gpus']) != 0)
 
 data.setup()
-runner = Trainer(logger=tb_logger,
+runner = Trainer(logger=wandb_logger,
                  callbacks=[
                      LearningRateMonitor(),
                      ModelCheckpoint(save_top_k=2, 
