@@ -1,12 +1,12 @@
 import os
+import numpy as np
 import torch
 from torch import Tensor
 from pathlib import Path
 from typing import List, Optional, Sequence, Union, Any, Callable
-from torchvision.datasets.folder import default_loader
 from torch.utils.data import DataLoader, Dataset
-from torchvision import transforms
 import lightning.pytorch as pl
+from typing import Optional
 
 from sklearn.model_selection import train_test_split
 
@@ -26,9 +26,13 @@ class KilterDataset(Dataset):
 
         
         board_train, board_val, v_train, v_val, angle_train, angle_val, send_train, send_val = train_test_split(
-                np.load(board_path), np.load(v_path), np.load(angle_path), np.load(sends_path),
+                np.load(board_path).astype(np.float32),
+                np.load(v_path).astype(np.float32),
+                np.load(angle_path).astype(np.float32),
+                np.load(sends_path).astype(np.float32),
                 test_size=0.1, random_state=random_seed
                 )
+
         if split == 'train':
             self.board_data = board_train
             self.v_grade = v_train
@@ -77,14 +81,14 @@ class KilterDataModule(pl.LightningDataModule):
 
         self.board_path = board_path
         self.v_path = v_path
-        self.angle_path: angle_path
+        self.angle_path = angle_path
         self.sends_path = sends_path
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.pin_memory = pin_memory
         self.random_seed = random_seed
 
-    def setup(self, stage)
+    def setup(self, stage: Optional[str] = None):
 
         self.train_dataset = KilterDataset(
                 self.board_path,
@@ -99,7 +103,7 @@ class KilterDataModule(pl.LightningDataModule):
                 self.v_path,
                 self.angle_path,
                 self.sends_path,
-                split = 'val'
+                split = 'val',
                 random_seed = self.random_seed,
                 )
 
