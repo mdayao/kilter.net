@@ -5,6 +5,8 @@ from pathlib import Path
 from experiment import VAEXperiment
 from dataset import KilterDataModule
 from models.cvae import ConditionalVAE as CVAE
+from visualization_utils import plot_climb
+from matplotlib import pyplot as plt
 
 import torch.backends.cudnn as cudnn
 
@@ -13,7 +15,6 @@ import lightning.pytorch as pl
 from lightning.pytorch import Trainer
 
 from lightning.pytorch.loggers import WandbLogger
-import wandb
 
 
 parser = argparse.ArgumentParser(description='Running kilter.net CVAE')
@@ -43,6 +44,8 @@ print(checkpoint['state_dict'].keys())
 base_model.load_state_dict(checkpoint['state_dict'])
 labels = torch.tensor([args.grade, args.angle],dtype=float)
 predicted_out = trained_model.sample(labels, num_samples=10)
-print(predicted_out)
+for i in range(10):
+    fig = plot_climb(predicted_out[i])
+    plt.savefig(f'./figures/generated_climbs/{i}.png',dpi=300)
 
 
