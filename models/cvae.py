@@ -84,8 +84,8 @@ class ConditionalVAE(nn.Module):
                                       kernel_size = (4,3),
                                       padding = (3,2)
                                       ),
-                            #nn.Tanh()
-                            nn.Sigmoid()
+                            nn.Tanh()
+                            #nn.Sigmoid()
                             )
 
         self.apply(self._init_weights) # initialize weights
@@ -153,8 +153,8 @@ class ConditionalVAE(nn.Module):
                       **kwargs) -> dict:
 
         kld_weight = kwargs['kld_weight']
-        #recons_loss = F.mse_loss(recons, x)
-        recons_loss = F.binary_cross_entropy(recons, x)
+        recons_loss = F.mse_loss(recons, x)
+        #recons_loss = F.binary_cross_entropy(recons, x)
 
         kld_loss = torch.mean(-0.5 * torch.sum(1 + log_var - mu ** 2 - log_var.exp(), dim = 1), dim = 0)
 
