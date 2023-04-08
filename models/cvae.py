@@ -6,7 +6,7 @@ from torch.nn import functional as F
 
 class ConditionalVAE(nn.Module):
 
-    def __init__(self,
+    def __init__(self, # TODO fix these arguments
                  in_channels: int,
                  num_classes: int,
                  latent_dim: int,
@@ -18,7 +18,9 @@ class ConditionalVAE(nn.Module):
         self.latent_dim = latent_dim
         self.img_size = img_size
 
-        self.embed_class = nn.Linear(num_classes, img_size * img_size)
+        # Embedding the non-board data (v_grade + angle)
+        self.embed_metadata = nn.Linear(2, img_size * img_size)
+
         self.embed_data = nn.Conv2d(in_channels, in_channels, kernel_size=1)
 
         modules = []
@@ -115,10 +117,15 @@ class ConditionalVAE(nn.Module):
         eps = torch.randn_like(std)
         return eps * std + mu
 
-	def forward(self, input: torch.tensor, y:torch.tensor, **kwargs) -> List[torch.tensor]:
-        embedded_class = self.embed_class(y)
-        embedded_class = embedded_class.view(-1, self.img_size, self.img_size).unsqueeze(1)
-        embedded_input = self.embed_data(input)
+	def forward(self, 
+             board_data: torch.tensor, 
+             y: torch.tensor, 
+             **kwargs) -> List[torch.tensor]:
+
+        embedded_metadata = self.embed_metadata(y)
+        embedded_metadata = embedded_metadata.view(-1, self.img_size, self.img_size).unsqueeze(1)
+
+        embedded_input = self.embed_data(board_data)
 
         x = torch.cat([embedded_input, embedded_class], dim = 1)
         mu, log_var = self.encode(x)
@@ -126,7 +133,8 @@ class ConditionalVAE(nn.Module):
         z = self.reparameterize(mu, log_var)
 
         z = torch.cat([z, y], dim = 1)
-        return  [self.decode(z), input, mu, log_var]
+
+        return  [self.decode(z), board_data, mu, log_var]
 
     def loss_function(self, x, recons, mu, log_var,
                       **kwargs) -> dict:
@@ -167,3 +175,4 @@ class ConditionalVAE(nn.Module):
         """
 
         return self.forward(x, y, **kwargs)[0]
+

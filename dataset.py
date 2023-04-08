@@ -17,24 +17,27 @@ class KilterDataset(Dataset):
     def __init__(self,
                  board_path: str,
                  v_path: str,
+                 angle_path: str,
                  sends_path: str,
                  split: str,
-                 random_state: int = 4892
+                 random_seed: int = 9473,
                  ):
         super().__init__()
 
         
-        board_train, board_val, v_train, v_val, send_train, send_val = train_test_split(
-                np.load(board_path), np.load(v_path), np.load(sends_path),
-                test_size=0.1, random_state=random_state
+        board_train, board_val, v_train, v_val, angle_train, angle_val, send_train, send_val = train_test_split(
+                np.load(board_path), np.load(v_path), np.load(angle_path), np.load(sends_path),
+                test_size=0.1, random_state=random_seed
                 )
         if split == 'train':
             self.board_data = board_train
             self.v_grade = v_train
+            self.angle = angle_train
             self.send_counts = send_train
         elif split == 'val':
             self.board_data = board_val
             self.v_grade = v_val
+            self.angle = angle_val
             self.send_counts = send_val
         else:
             raise ValueError(f"split must be one of ['train', 'val'] but got {split}")
@@ -44,11 +47,12 @@ class KilterDataset(Dataset):
 
     def __getitem__(self, idx):
 
-        board_arr = self.board_data[0]
-        v_grade = self.v_grade[0]
-        num_sends = self.send_counts[0]
+        board_arr = self.board_data[idx]
+        v_grade = self.v_grade[idx]
+        angle = self.angle[idx]
+        num_sends = self.send_counts[idx]
         
-        return board_arr, v_grade, num_sends
+        return board_arr, v_grade, angle, num_sends
 
 class KilterDataModule(pl.LightningDataModule):
     """
@@ -61,34 +65,42 @@ class KilterDataModule(pl.LightningDataModule):
     def __init__(self,
                  board_path: str,
                  v_path: str,
+                 angle_path: str,
                  sends_path: str,
                  batch_size: int,
                  num_workers: int = 0,
                  pin_memory: bool = False,
+                 random_seed: int = 9473,
                  **kwargs,
                  ):
         super().__init__()
 
         self.board_path = board_path
         self.v_path = v_path
+        self.angle_path: angle_path
         self.sends_path = sends_path
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.pin_memory = pin_memory
+        self.random_seed = random_seed
 
     def setup(self, stage)
 
         self.train_dataset = KilterDataset(
                 self.board_path,
                 self.v_path,
+                self.angle_path,
                 self.sends_path,
-                split = 'train'
+                split = 'train',
+                random_seed = self.random_seed,
                 )
         self.val_dataset = KilterDataset(
                 self.board_path,
                 self.v_path,
+                self.angle_path,
                 self.sends_path,
                 split = 'val'
+                random_seed = self.random_seed,
                 )
 
     def train_dataloader(self):
@@ -105,7 +117,7 @@ class KilterDataModule(pl.LightningDataModule):
                 self.val_dataset,
                 batch_size=self.batch_size,
                 num_workers=self.num_workers,
-                shuffle=True,
+                shuffle=False,
                 pin_memory=self.pin_memory
                 )
 
