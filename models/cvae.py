@@ -90,7 +90,7 @@ class ConditionalVAE(nn.Module):
 
     def _init_weights(self, m, init_method = nn.init.kaiming_uniform_):
         if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
-            init_method(m.weight, mode='fan_in', nonlinearity='leakyrelu')
+            init_method(m.weight, mode='fan_in', nonlinearity='leaky_relu')
 
     def encode(self, board_input: torch.tensor) -> List[torch.tensor]:
         """
