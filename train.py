@@ -36,14 +36,20 @@ parser.add_argument('--pin-memory', action='store_true', help='set this to pin m
 args = parser.parse_args()
 config = vars(args)
 
-WANDB_PROJECT = "cvae"
+WANDB_PROJECT = "kilter-cvae"
 WANDB_ENTITY = "cvae"
 WANDB_NAME = "cvae"
-#wandb_logger = WandbLogger(project=WANDB_PROJECT)
+wandb_logger = WandbLogger(project=WANDB_PROJECT)
+
+wandb_logger.experiment.config["batch_size"] = args.batch_size
+wandb_logger.experiment.config["random_seed"] = args.random_seed
+wandb_logger.experiment.config["max_epochs"] = args.max_epochs
 
 model = CVAE(in_channels=4,
              latent_dim=args.latent_dim, 
              )
+
+wandb.watch(model, log='all', log_freq=200, log_graph=True)
 
 experiment = VAEXperiment(model,
                           params = {
@@ -64,16 +70,16 @@ datamodule = KilterDataModule(
 datamodule.setup()
 
 trainer = Trainer(
-                 #logger=wandb_logger, 
+                 logger=wandb_logger, 
                  max_epochs=args.max_epochs,
-                 accelerator='cpu',
+                 accelerator='gpu',
                  devices='auto'
                  )
 
 #Path(f"{tb_logger.log_dir}/Samples").mkdir(exist_ok=True, parents=True)
 #Path(f"{tb_logger.log_dir}/Reconstructions").mkdir(exist_ok=True, parents=True)
 
-
 print(f"======= Training CVAE =======")
 trainer.fit(experiment, datamodule=datamodule)
 
+wandb.finish()
