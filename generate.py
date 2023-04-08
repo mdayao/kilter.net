@@ -27,23 +27,25 @@ parser.add_argument('--learning-rate', '-lr', type=float, default=1e-3, help='Le
 parser.add_argument('--batch-size', '-bs', type=int, default=128, help='Batch size')
 parser.add_argument('--kld-weight', '-kld', type=float, default=2.5e-4, help='KL divergence weight')
 
-
 args = parser.parse_args()
 
-base_model = CVAE(in_channels=4,
-             latent_dim=args.latent_dim, 
-             )
+#base_model = CVAE(in_channels=4,
+#             latent_dim=args.latent_dim, 
+#             )
 # experiment = VAEXperiment(base_model,
 #                           params = {
 #                               'kld_weight': args.kld_weight,
 #                               'LR': args.learning_rate
 #                               })
-# trained_model = experiment.load_from_checkpoint(args.path_to_checkpoint)
-checkpoint = torch.load(args.path_to_checkpoint,map_location=torch.device('cpu'))
-print(checkpoint['state_dict'].keys())
-base_model.load_state_dict(checkpoint['state_dict'])
+trained_model = VAEXperiment.load_from_checkpoint(args.path_to_checkpoint, vae_model=CVAE(in_channels=4, latent_dim=args.latent_dim))
+trained_model.eval()
+#checkpoint = torch.load(args.path_to_checkpoint,map_location=torch.device('cpu'))
+#print(checkpoint['state_dict'].keys())
+#base_model.load_state_dict(checkpoint['state_dict'])
 labels = torch.tensor([args.grade, args.angle],dtype=float)
-predicted_out = trained_model.sample(labels, num_samples=10)
+predicted_out = trained_model.model.sample(labels, num_samples=10)
+print(predicted_out.max())
+print(predicted_out.min())
 for i in range(10):
     fig = plot_climb(predicted_out[i])
     plt.savefig(f'./figures/generated_climbs/{i}.png',dpi=300)
