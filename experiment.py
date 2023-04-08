@@ -2,7 +2,7 @@ import os
 import math
 import torch
 from torch import optim
-from models.cvae import CVAE
+from models.cvae import ConditionalVAE as CVAE
 from utils import data_loader
 import pytorch_lightning as pl
 from torchvision import transforms
