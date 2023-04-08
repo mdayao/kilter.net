@@ -160,19 +160,15 @@ class ConditionalVAE(nn.Module):
 
     def sample(self, y: torch.tensor,
                num_samples:int,
-               current_device: int,
                **kwargs) -> torch.tensor:
         """
         Samples from the latent space and return the corresponding
         image space map.
         :param num_samples: (Int) Number of samples
-        :param current_device: (Int) Device to run the model
         :return: (torch.tensor)
         """
         z = torch.randn(num_samples,
                         self.latent_dim)
-
-        z = z.to(current_device)
 
         z = torch.cat([z, y], dim=1)
         samples = self.decode(z)
