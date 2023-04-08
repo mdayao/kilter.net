@@ -4,7 +4,8 @@ import argparse
 import numpy as np
 from pathlib import Path
 from experiment import VAEXperiment
-from models.cvae import CVAE
+from dataset import KilterDataset
+from models.cvae import ConditionalVAE as CVAE
 import torch.backends.cudnn as cudnn
 from pytorch_lightning import Trainer
 from lightning.pytorch.loggers import WandbLogger
@@ -32,7 +33,7 @@ model = CVAE(in_channels=5,num_classes=10, latent_dim=args.latent_dim, img_size=
 experiment = VAEXperiment(model,
                           config['exp_params'])
 
-data = VAEDataset(**config["data_params"], pin_memory=len(config['trainer_params']['gpus']) != 0)
+data = KilterDataset(**config["data_params"], pin_memory=len(config['trainer_params']['gpus']) != 0)
 
 data.setup()
 runner = Trainer(logger=wandb_logger,
