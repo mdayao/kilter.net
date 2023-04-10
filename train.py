@@ -19,6 +19,7 @@ parser = argparse.ArgumentParser(description='Running kilter.net CVAE')
 
 parser.add_argument('--latent-dim','-L', type=int, default=32, help='Latent dimension')
 parser.add_argument('--learning-rate', '-lr', type=float, default=1e-3, help='Learning rate')
+parser.add_argument('--weight-decay', '-wd', type=float, default=1e-4, help='Weight Decay')
 parser.add_argument('--batch-size', '-bs', type=int, default=128, help='Batch size')
 parser.add_argument('--kld-weight', '-kld', type=float, default=2.5e-4, help='KL divergence weight')
 
@@ -32,6 +33,8 @@ parser.add_argument('--sends-path', type=str, default='training_data/kilter_asce
 
 parser.add_argument('--num-workers', type=int, default=0, help='number of workers for DataLoader')
 parser.add_argument('--pin-memory', action='store_true', help='set this to pin memory for DataLoader')
+
+parser.add_argument('--use-cpu', action="store_true", help="use the CPU and not GPU")
 
 args = parser.parse_args()
 config = vars(args)
@@ -54,7 +57,8 @@ wandb.watch(model, log='all', log_freq=200, log_graph=True)
 experiment = VAEXperiment(model,
                           params = {
                               'kld_weight': args.kld_weight,
-                              'LR': args.learning_rate
+                              'LR': args.learning_rate,
+                              'WD': args.weight_decay,
                               })
 
 datamodule = KilterDataModule(
@@ -72,7 +76,7 @@ datamodule.setup()
 trainer = Trainer(
                  logger=wandb_logger, 
                  max_epochs=args.max_epochs,
-                 accelerator='gpu',
+                 accelerator='cpu' if args.use_cpu else 'gpu',
                  devices='auto'
                  )
 
