@@ -7,11 +7,13 @@ main_hold_to_grid = {}
 main_hold_to_coords = {}
 
 # 18 by 17
+mainhold_offset = 0
 for idx, hold_idx in enumerate(all_data[0][0]['mainholds']['hold_id']):
     main_hold_to_grid[hold_idx] = all_data[0][0]['mainholds']['grid'][idx]
     main_hold_to_coords[hold_idx] = all_data[0][0]['mainholds']['coords'][idx]
 
 # 15 by 18
+aux_hold_offset = 18
 aux_hold_to_grid = {}
 aux_hold_to_coords = {}
 for idx, hold_idx in enumerate(all_data[0][1]['auxillary']['hold_id']):
@@ -19,11 +21,12 @@ for idx, hold_idx in enumerate(all_data[0][1]['auxillary']['hold_id']):
     aux_hold_to_coords[hold_idx] = all_data[0][1]['auxillary']['coords'][idx]
 
 # 2 by 18
-kick_hold_to_grid = {}
-kick_hold_to_coords = {}
+kickboard_offset = 33
+kickboard_to_grid = {}
+kickboard_to_coords = {}
 for idx, hold_idx in enumerate(all_data[0][2]['kickboard']['hold_id']):
-    kick_hold_to_grid[hold_idx] = all_data[0][2]['kickboard']['grid'][idx]
-    kick_hold_to_coords[hold_idx] = all_data[0][2]['kickboard']['coords'][idx]
+    kickboard_to_grid[hold_idx] = all_data[0][2]['kickboard']['grid'][idx]
+    kickboard_to_coords[hold_idx] = all_data[0][2]['kickboard']['coords'][idx]
 
 # convert a list of holds and hold types into a one hot encoding
 def convert_hold_to_one_hot(hold_idxs, channels):
@@ -36,11 +39,11 @@ def convert_hold_to_one_hot(hold_idxs, channels):
 
         elif hold_idx in aux_hold_to_grid:
             aux_j, aux_i = aux_hold_to_grid[hold_idx]
-            final_grid[channel, aux_i, aux_j] = 1
+            final_grid[channel, aux_i+aux_hold_offset, aux_j] = 1
 
-        elif hold_idx in kick_hold_to_grid:
-            kick_j, kick_i = kick_hold_to_grid[hold_idx]
-            final_grid[channel, kick_i, kick_j] = 1
+        elif hold_idx in kickboard_to_grid:
+            kick_j, kick_i = kickboard_to_grid[hold_idx]
+            final_grid[channel, kick_i+kickboard_offset, kick_j] = 1
 
     assert(np.sum(final_grid) > 1)
     return final_grid
