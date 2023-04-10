@@ -37,6 +37,8 @@ parser.add_argument('--pin-memory', action='store_true', help='set this to pin m
 parser.add_argument('--use-cpu', action="store_true", help="use the CPU and not GPU")
 parser.add_argument('--no-logger', action='store_true', help='set this to disable logger')
 
+parser.add_argument('--model-checkpoint', type=str, default=None, help='path to model checkpoint')
+
 args = parser.parse_args()
 config = vars(args)
 
@@ -83,11 +85,11 @@ trainer = Trainer(
                  devices='auto'
                  )
 
-#Path(f"{tb_logger.log_dir}/Samples").mkdir(exist_ok=True, parents=True)
-#Path(f"{tb_logger.log_dir}/Reconstructions").mkdir(exist_ok=True, parents=True)
-
 print(f"======= Training CVAE =======")
-trainer.fit(experiment, datamodule=datamodule)
+trainer.fit(experiment, 
+        datamodule=datamodule,
+        ckpt_path=args.model_checkpoint,
+        )
 
 if not args.no_logger:
     wandb.finish()
