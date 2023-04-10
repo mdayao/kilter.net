@@ -33,23 +33,27 @@ parser.add_argument('--sends-path', type=str, default='training_data/kilter_asce
 parser.add_argument('--num-workers', type=int, default=0, help='number of workers for DataLoader')
 parser.add_argument('--pin-memory', action='store_true', help='set this to pin memory for DataLoader')
 
+parser.add_argument('--no-logger', action='store_true', help='set this to disable logger')
+
 args = parser.parse_args()
 config = vars(args)
 
-WANDB_PROJECT = "kilter-cvae"
-WANDB_ENTITY = "cvae"
-WANDB_NAME = "cvae"
-wandb_logger = WandbLogger(project=WANDB_PROJECT)
-
-wandb_logger.experiment.config["batch_size"] = args.batch_size
-wandb_logger.experiment.config["random_seed"] = args.random_seed
-wandb_logger.experiment.config["max_epochs"] = args.max_epochs
+if not args.no_logger:
+    WANDB_PROJECT = "kilter-cvae"
+    WANDB_ENTITY = "cvae"
+    WANDB_NAME = "cvae"
+    wandb_logger = WandbLogger(project=WANDB_PROJECT)
+    
+    wandb_logger.experiment.config["batch_size"] = args.batch_size
+    wandb_logger.experiment.config["random_seed"] = args.random_seed
+    wandb_logger.experiment.config["max_epochs"] = args.max_epochs
 
 model = CVAE(in_channels=4,
              latent_dim=args.latent_dim, 
              )
 
-wandb.watch(model, log='all', log_freq=200, log_graph=True)
+if not args.no_logger:
+    wandb.watch(model, log='all', log_freq=200, log_graph=True)
 
 experiment = VAEXperiment(model,
                           params = {
@@ -70,7 +74,7 @@ datamodule = KilterDataModule(
 datamodule.setup()
 
 trainer = Trainer(
-                 logger=wandb_logger, 
+                 logger=wandb_logger if not args.no_logger else None, 
                  max_epochs=args.max_epochs,
                  accelerator='gpu',
                  devices='auto'
@@ -82,4 +86,5 @@ trainer = Trainer(
 print(f"======= Training CVAE =======")
 trainer.fit(experiment, datamodule=datamodule)
 
-wandb.finish()
+if not args.no_logger:
+    wandb.finish()
