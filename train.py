@@ -36,6 +36,7 @@ parser.add_argument('--pin-memory', action='store_true', help='set this to pin m
 
 parser.add_argument('--use-cpu', action="store_true", help="use the CPU and not GPU")
 parser.add_argument('--no-logger', action='store_true', help='set this to disable logger')
+parser.add_argument('--use-cpu', action="store_true", help="use the CPU and not GPU")
 
 parser.add_argument('--model-checkpoint', type=str, default=None, help='path to model checkpoint')
 
