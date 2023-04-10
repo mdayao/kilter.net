@@ -49,6 +49,7 @@ class VAEXperiment(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = optim.Adam(self.model.parameters(),
                                lr=self.params['LR'],
+                               weight_decay=self.params['WD'],
                                )
         return optimizer
 
