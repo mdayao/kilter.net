@@ -22,12 +22,14 @@ parser = argparse.ArgumentParser(description='Running kilter.net CVAE')
 parser.add_argument('--path-to-checkpoint','-P', required=True, help='path to saved model checkpoint')
 parser.add_argument('--angle','-A', default=40, type=int, help='angle of the wall')
 parser.add_argument('--grade','-V', default=1,type=int, help='V-grade of the problem')
+parser.add_argument('--num_samples','-N', type=int, default=10, help='Number of samples to generate')
 parser.add_argument('--latent-dim','-L', type=int, default=32, help='Latent dimension')
 parser.add_argument('--learning-rate', '-lr', type=float, default=1e-3, help='Learning rate')
 parser.add_argument('--batch-size', '-bs', type=int, default=128, help='Batch size')
 parser.add_argument('--kld-weight', '-kld', type=float, default=2.5e-4, help='KL divergence weight')
-
 parser.add_argument('--figure_dir','-F', default="figures", help='Directory to save figures')
+
+parser.add_argument('--figure_dir','-F', default="figures/generated_climbs/", help='Directory to save figures')
 
 args = parser.parse_args()
 
@@ -45,11 +47,18 @@ trained_model.eval()
 #print(checkpoint['state_dict'].keys())
 #base_model.load_state_dict(checkpoint['state_dict'])
 labels = torch.tensor([args.grade, args.angle],dtype=float)
-predicted_out = trained_model.model.sample(labels, num_samples=10)
-print(predicted_out.max())
-print(predicted_out.min())
-for i in range(10):
-    fig = plot_climb(predicted_out[i])
-    plt.savefig(f'./{args.figure_dir}/generated_climbs/{i}.png',dpi=300)
+predicted_out = trained_model.model.sample(labels, num_samples=args.num_samples)
+predicted_climbs = predicted_out.detach().numpy()
+# print(predicted_out.max())
+# print(predicted_out.min())
+# print(predicted_climbs[0].shape)
+for i in range(args.num_samples):
+    curr_climb = predicted_climbs[i]
+    curr_climb = (curr_climb - curr_climb.min())/(curr_climb.max() - curr_climb.min())
+    print(curr_climb.shape)
+    curr_climb = np.where(curr_climb > 0.95,1,0)
+    print(curr_climb.shape)
+    fig = plot_climb(curr_climb)
+    plt.savefig(f'./{args.figure_dir}/grade{args.grade}_angle{args.angle}_{i}.png',dpi=300)
 
 
