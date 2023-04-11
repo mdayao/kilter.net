@@ -19,7 +19,7 @@ from lightning.pytorch.loggers import WandbLogger
 
 parser = argparse.ArgumentParser(description='Running kilter.net CVAE')
 
-parser.add_argument('--path-to-checkpoint','-P', required=True, help='path to saved model checkpoint')
+parser.add_argument('--path_to_checkpoint', '-P', required=True, help='path to saved model checkpoint')
 parser.add_argument('--angle','-A', default=40, type=int, help='angle of the wall')
 parser.add_argument('--grade','-V', default=1,type=int, help='V-grade of the problem')
 parser.add_argument('--num_samples','-N', type=int, default=10, help='Number of samples to generate')
