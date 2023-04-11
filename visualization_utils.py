@@ -13,7 +13,7 @@ def holdidx_to_coords(value):
         radius = 15
         x -= 18
         y_coord = int(x  * 60 +180)
-        x_coord = int( y * 60 + 30)
+        x_coord = int( y * 120 + 30 + (x % 2) * 60)
     else: #kickboard
         x -= 33
         radius = 20
