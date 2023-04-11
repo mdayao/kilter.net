@@ -17,7 +17,6 @@ def holdidx_to_coords(value):
     else: #kickboard
         x -= 33
         radius = 20
-        print(x,y)
         y_coord = int( x * 30 + 1110)
         x_coord = int( y * 60.0 + int(x == 0) * 30 + 30)
     return x_coord, y_coord, radius
@@ -28,7 +27,6 @@ def plot_climb(climb_features, thickness=2):
 
     for channel, color in zip([3,1,0,2], [(0, 165, 255), (255, 255, 0), (0, 255, 0),  (255, 0, 255)]):
         holds = np.transpose(np.nonzero(climb_features[channel]))
-        print(channel, holds)
         if len(holds) > 0:
             for x,y,r in np.apply_along_axis(holdidx_to_coords, 1, holds):
                 image = cv2.circle(image, (x, y), r, color, thickness)
