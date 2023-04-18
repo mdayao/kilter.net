@@ -35,11 +35,15 @@ def convert_hold_to_one_hot(hold_idxs, channels):
         # classify if this hold is a main hold, auxillary hold, or kick hold
         if hold_idx in main_hold_to_grid:
             main_j, main_i = main_hold_to_grid[hold_idx]
+            if main_i > 2:
+                main_i += (main_i - 2)
             final_grid[channel, main_i, main_j] = 1
 
         elif hold_idx in aux_hold_to_grid:
             aux_j, aux_i = aux_hold_to_grid[hold_idx]
-            final_grid[channel, aux_i+aux_hold_offset, aux_j] = 1
+            aux_i += aux_i +3
+            aux_j = aux_j * 2
+            final_grid[channel, aux_i, aux_j] = 1
 
         elif hold_idx in kickboard_to_grid:
             kick_j, kick_i = kickboard_to_grid[hold_idx]

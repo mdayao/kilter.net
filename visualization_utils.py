@@ -5,20 +5,22 @@ import cv2
 
 def holdidx_to_coords(value):
     x,y = value
-    if x < 18: #main_holds
-        radius = 30
-        y_coord = int((x + 0.5) * 60.0)
-        x_coord = int((y + 1) * 60.0)
-    elif x < 33: #auxillary holds
-        radius = 15
-        x -= 18
-        y_coord = int(x  * 60 +180)
-        x_coord = int( y * 120 + 30 + (x % 2) * 60)
-    else: #kickboard
+    if x > 32: #kickboard
         x -= 33
         radius = 20
         y_coord = int( x * 30 + 1110)
         x_coord = int( y * 60.0 + int(x == 0) * 30 + 30)
+    elif x < 3 or ((x % 2) == 0 and x > 2): #main_holds
+        radius = 30
+        y_coord = int((min(x,2) + 0.5) * 60.0 + max(0,(x-2)) * 30)
+        x_coord = int((y + 1) * 60.0)
+    elif x > 2 and (x % 2) == 1: #auxillary holds
+        x -= 3
+        radius = 15
+        y_coord = int(x  * 30 + 180 )
+        x_coord = int( y  * 60 + (x % 4) * 30 + 30) 
+    else:
+        print('bad hold')
     return x_coord, y_coord, radius
 
 def plot_climb(climb_features, thickness=2):
